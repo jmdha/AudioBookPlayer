@@ -21,7 +21,7 @@
 					<RowDefinition></RowDefinition>
 					<RowDefinition></RowDefinition>
 				</Grid.RowDefinitions>
-				<TextBlock Text="NAME OF BOOK" Grid.Row="0" Foreground="#FFC3C3C3" VerticalAlignment="Center" FontSize="16" MinHeight="12" Margin="2"></TextBlock>
+				<TextBlock Name="Title" Text="NAME OF BOOK" Grid.Row="0" Foreground="#FFC3C3C3" VerticalAlignment="Center" FontSize="16" MinHeight="12" Margin="2"></TextBlock>
 				<TextBlock Grid.Row="1"  Foreground="#FFC3C3C3" VerticalAlignment="Center" FontSize="16">
 					<TextBlock Name="CurrentMin" Text="0"></TextBlock>
 						<TextBlock Text=":"></TextBlock>
@@ -30,7 +30,10 @@
 					<TextBlock Name="TotalMin" Text="0"></TextBlock>
 						<TextBlock Text=":"></TextBlock>
 					<TextBlock Name="TotalSec" Text="0"></TextBlock>
+					
 				</TextBlock>
+				<Button Content="Pause" Grid.Row="1" Width="64" Height="48" Margin="128,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Button_Click"></Button>
+				<Button Content="Play" Grid.Row="1" Width="64" Height="48" Margin="196,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Button_Click_1"></Button>
 				
 			</Grid>
 			<Grid Grid.Row="1">

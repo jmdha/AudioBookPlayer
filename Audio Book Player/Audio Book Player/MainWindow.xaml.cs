@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace Audio_Book_Player
 {
@@ -29,13 +30,17 @@ namespace Audio_Book_Player
 		private void Button_Click(object sender, RoutedEventArgs e)
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog();
-			openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3|All files (*.*)|*.*";
+			openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3";
 			if (openFileDialog.ShowDialog() == true)
 			{
 
 
 				Player player = new Player();
 				player.MediaPlayer.Source = new Uri(openFileDialog.FileName);
+				player.currentFile = openFileDialog.FileName;
+				player.currentDirectory = System.IO.Path.GetDirectoryName(openFileDialog.FileName);
+				string fileName = System.IO.Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+				player.Title.Text = fileName;
 				player.Show();
 				this.Close();
 			}
