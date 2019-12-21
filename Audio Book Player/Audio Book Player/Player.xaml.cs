@@ -16,159 +16,157 @@ namespace Audio_Book_Player
 	public partial class Player : Window
 	{
 		DispatcherTimer timer = new DispatcherTimer();
-		double currentTime, totalTime;
+		public double currentTime, volume;
 		public string currentFile;
 		public string currentDirectory;
 		private bool currentlyPaused = true;
+		private bool initialUISet = true;
 
 		public Player()
 		{
 			InitializeComponent();
 		}
-
 		private void Grid_Loaded(object sender, RoutedEventArgs e)
 		{
 			LoadConfig();
-			MediaPlayer.Play();
-		}
+			LoadFile(currentFile);
 
-		void LoadConfig()
-		{
-			VolumeSlider.Value = Convert.ToDouble(ConfigurationManager.AppSettings.Get("Volume"));
-			MediaPlayer.Volume = Convert.ToDouble(ConfigurationManager.AppSettings.Get("Volume"));
-			currentTime = Convert.ToDouble(ConfigurationManager.AppSettings.Get("Position"));
-			MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
-			UpdatePosition();
-		}
-
-
-		public static void AddOrUpdateAppSettings(string key, string value)
-		{
-			try
-			{
-				var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-				var settings = configFile.AppSettings.Settings;
-				if (settings[key] == null)
-				{
-					settings.Add(key, value);
-				}
-				else
-				{
-					settings[key].Value = value;
-				}
-				configFile.Save(ConfigurationSaveMode.Modified);
-				ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-			}
-			catch (ConfigurationErrorsException)
-			{
-				Console.WriteLine("Error writing app settings");
-			}
-		}
-
-		void RefreshUI()
-		{
-			totalTime = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-			TotalMin.Text = MediaPlayer.NaturalDuration.TimeSpan.Minutes.ToString();
-			TotalSec.Text = MediaPlayer.NaturalDuration.TimeSpan.Seconds.ToString();
-
-			PositionSlider.Maximum = totalTime;
-
-		}
-
-		private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e)
-		{
-			if (MediaPlayer.NaturalDuration.HasTimeSpan)
-			{
-				RefreshUI();
-			}
-			
-			UpdatePosition();
 			timer.Interval = TimeSpan.FromSeconds(1);
 			timer.Tick += Tick;
 			timer.Start();
 		}
-
+		
+		private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e)
+		{
+			MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
+			TotalMin.Text = (MediaPlayer.NaturalDuration.TimeSpan.Minutes + (MediaPlayer.NaturalDuration.TimeSpan.Hours * 60)).ToString();
+			TotalSec.Text = MediaPlayer.NaturalDuration.TimeSpan.Seconds.ToString();
+			PositionSlider.Maximum = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+			RefreshUI();
+		}
 		private void PositionSlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
 		{
 			if (System.Windows.Input.Mouse.LeftButton == MouseButtonState.Released && !currentlyPaused)
 				MediaPlayer.Play();
 			MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(Math.Floor(PositionSlider.Value)));
 			currentTime = PositionSlider.Value;
-			AddOrUpdateAppSettings("Position", currentTime.ToString());
+			RefreshPositionUI();
+			Code.CommonFunctions.AddOrUpdateAppSettings("Position", currentTime.ToString());
 		}
-
 		private void PositionSlider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			if (System.Windows.Input.Mouse.LeftButton == MouseButtonState.Pressed)
-						MediaPlayer.Pause();
+				MediaPlayer.Pause();
 		}
-
 		private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
-			MediaPlayer.Volume = VolumeSlider.Value;
-			AddOrUpdateAppSettings("Volume", VolumeSlider.Value.ToString());
+			volume = VolumeSlider.Value;
+			MediaPlayer.Volume = volume;
+			Code.CommonFunctions.AddOrUpdateAppSettings("Volume", volume.ToString());
 		}
-
-		void UpdatePosition()
+		private void Start_Click(object sender, RoutedEventArgs e)
 		{
-			PositionSlider.Value = currentTime;
-			CurrentMin.Text = MediaPlayer.Position.Minutes.ToString();
-			CurrentSec.Text = MediaPlayer.Position.Seconds.ToString();
+			currentTime = 0;
+			Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
+			MediaPlayer.Position = new TimeSpan(0);
+			RefreshPositionUI();
+			MediaPlayer.Play();
+			currentlyPaused = false;
+			ContinuePauseText.Text = "Pause";
 		}
-
-		void Tick(object sender, EventArgs e)     
+		private void ContinuePause_Click(object sender, RoutedEventArgs e)
 		{
-			currentTime = MediaPlayer.Position.TotalSeconds;
-			UpdatePosition();
-			AddOrUpdateAppSettings("Position", currentTime.ToString());
-			if (MediaPlayer.NaturalDuration.HasTimeSpan)
-				if (currentTime == MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds)
-					LoadNextFile();
-		}
-
-		void LoadNextFile()
-		{
-			string nextFile = GetNextFile();
-			MediaPlayer.Source = new Uri(nextFile);
-			Title.Text = System.IO.Path.GetFileNameWithoutExtension(nextFile);
-			if (MediaPlayer.NaturalDuration.HasTimeSpan)
+			if (currentlyPaused)
 			{
-				RefreshUI();
+				MediaPlayer.Play();
+				currentlyPaused = false;
+				ContinuePauseText.Text = "Pause";
 			}
-			AddOrUpdateAppSettings("Position", "0");
-			UpdatePosition();
-			currentFile = nextFile;
+			else
+			{
+				MediaPlayer.Pause();
+				currentlyPaused = true;
+				ContinuePauseText.Text = "Continue";
+			}
+		}
+
+		private void SkipBack_Click(object sender, RoutedEventArgs e)
+		{
+			LoadFile(Code.CommonFunctions.GetFormerFile(currentDirectory, currentFile));
+			currentTime = 0;
+			Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
+		}
+
+		private void SkipForward_Click(object sender, RoutedEventArgs e)
+		{
+			LoadFile(Code.CommonFunctions.GetNextFile(currentDirectory, currentFile));
+			currentTime = 0;
+			Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
 		}
 
 		private void Button_Click(object sender, RoutedEventArgs e)
 		{
-			MediaPlayer.Pause();
-			currentlyPaused = true;
+			Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+			openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3";
+			if (openFileDialog.ShowDialog() == true)
+				LoadFile(openFileDialog.FileName);
 		}
 
-		private void Button_Click_1(object sender, RoutedEventArgs e)
+		void Tick(object sender, EventArgs e)
 		{
-			MediaPlayer.Play();
-			currentlyPaused = false;
-		}
-
-		string GetNextFile()
-		{
-			string[] files = Directory.GetFiles(currentDirectory);
-			bool foundCurrentFile = false;
-			foreach(string file in files)
-			{
-				if (file.Contains(".mp3"))
+			currentTime = MediaPlayer.Position.TotalSeconds;
+			RefreshPositionUI();
+			if (MediaPlayer.NaturalDuration.HasTimeSpan)
+				if (currentTime == MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds)
 				{
-					if (file == currentFile)
-						foundCurrentFile = true;
-					else if (file != currentFile && foundCurrentFile)
-						return file;
-						
+					LoadFile(Code.CommonFunctions.GetNextFile(currentDirectory, currentFile));
+					currentTime = 0;
+					Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
 				}
-			}
-			return files[0];
+			//Code.CommonFunctions.AddOrUpdateAppSettings("Position", currentTime.ToString());
 		}
 
+		void LoadConfig()
+		{
+			if (ConfigurationManager.AppSettings.Get("File") != "")
+			{
+				currentFile = ConfigurationManager.AppSettings.Get("File");
+				currentTime = Convert.ToDouble(ConfigurationManager.AppSettings.Get("Position"));
+				volume = Convert.ToDouble(ConfigurationManager.AppSettings.Get("Volume"));
+			}
+		}
+
+		void LoadFile(string _file)
+		{
+			MediaPlayer.Source = new Uri(_file);
+			
+			this.Title = System.IO.Path.GetFileNameWithoutExtension(_file);
+			RefreshUI();
+			currentDirectory = System.IO.Path.GetDirectoryName(_file);
+			currentFile = _file;
+			Code.CommonFunctions.AddOrUpdateAppSettings("File", _file);
+			
+		}
+
+		public void RefreshUI()
+		{
+			VolumeSlider.Value = volume;
+			MediaPlayer.Volume = volume;
+
+			PositionSlider.Value = currentTime;
+			//MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
+
+			if (MediaPlayer.NaturalDuration.HasTimeSpan)
+			{
+				RefreshPositionUI();
+			}
+		}
+
+		void RefreshPositionUI()
+		{
+			PositionSlider.Value = currentTime;
+			CurrentMin.Text = (MediaPlayer.Position.Minutes + (MediaPlayer.Position.Hours * 60)).ToString();
+			CurrentSec.Text = MediaPlayer.Position.Seconds.ToString();
+		}
 	}
 }
