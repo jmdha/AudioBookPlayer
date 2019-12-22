@@ -253,9 +253,10 @@ namespace Audio_Book_Player
 
 		private void ChapterList_DropDownClosed(object sender, EventArgs e)
 		{
-			if (ChapterList.SelectedItem != null)
+			string selectedFile = (currentDirectory + "\\" + ChapterList.SelectedItem.ToString() + ".mp3");
+			if (ChapterList.SelectedItem != null && currentFile != selectedFile)
 			{
-				LoadFile(currentDirectory + "\\" + ChapterList.SelectedItem.ToString() + ".mp3");
+				LoadFile(selectedFile);
 				currentTime = 0;
 				Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, "0");
 			}
