@@ -16,7 +16,7 @@ namespace Audio_Book_Player
 	public partial class Player : Window
 	{
 		DispatcherTimer timer = new DispatcherTimer();
-		public double currentTime, volume;
+		double currentTime, volume;
 		public string currentFile;
 		public string currentDirectory;
 		private bool currentlyPaused = true;
@@ -29,20 +29,22 @@ namespace Audio_Book_Player
 		private void Grid_Loaded(object sender, RoutedEventArgs e)
 		{
 			LoadConfig();
+			MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
 			LoadFile(currentFile);
 
-			timer.Interval = TimeSpan.FromSeconds(1);
-			timer.Tick += Tick;
-			timer.Start();
+			
 		}
 		
 		private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e)
 		{
-			MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
+			
 			TotalMin.Text = (MediaPlayer.NaturalDuration.TimeSpan.Minutes + (MediaPlayer.NaturalDuration.TimeSpan.Hours * 60)).ToString();
 			TotalSec.Text = MediaPlayer.NaturalDuration.TimeSpan.Seconds.ToString();
 			PositionSlider.Maximum = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
 			RefreshUI();
+			timer.Interval = TimeSpan.FromSeconds(1);
+			timer.Tick += Tick;
+			timer.Start();
 		}
 		private void PositionSlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
 		{
@@ -123,7 +125,7 @@ namespace Audio_Book_Player
 					currentTime = 0;
 					Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
 				}
-			//Code.CommonFunctions.AddOrUpdateAppSettings("Position", currentTime.ToString());
+			Code.CommonFunctions.AddOrUpdateAppSettings("Position", currentTime.ToString());
 		}
 
 		void LoadConfig()
