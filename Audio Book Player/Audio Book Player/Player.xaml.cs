@@ -19,6 +19,8 @@ namespace Audio_Book_Player
 		double currentTime, volume;
 		public string currentFile;
 		public string currentDirectory;
+		public string[] filesInFolder;
+		public int currentIndex;
 		private bool currentlyPaused = true;
 		private bool initialUISet = true;
 
@@ -31,8 +33,7 @@ namespace Audio_Book_Player
 			LoadConfig();
 			MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
 			LoadFile(currentFile);
-
-			
+			LoadFiles();
 		}
 		
 		private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e)
@@ -94,14 +95,14 @@ namespace Audio_Book_Player
 
 		private void SkipBack_Click(object sender, RoutedEventArgs e)
 		{
-			LoadFile(Code.CommonFunctions.GetFormerFile(currentDirectory, currentFile));
+			LoadFile(Code.CommonFunctions.GetFormerFile(filesInFolder, currentIndex));
 			currentTime = 0;
 			Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
 		}
 
 		private void SkipForward_Click(object sender, RoutedEventArgs e)
 		{
-			LoadFile(Code.CommonFunctions.GetNextFile(currentDirectory, currentFile));
+			LoadFile(Code.CommonFunctions.GetNextFile(filesInFolder, currentIndex));
 			currentTime = 0;
 			Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
 		}
@@ -111,7 +112,11 @@ namespace Audio_Book_Player
 			Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
 			openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3";
 			if (openFileDialog.ShowDialog() == true)
+			{
+				filesInFolder = null;
 				LoadFile(openFileDialog.FileName);
+				LoadFiles();
+			}
 		}
 
 		void Tick(object sender, EventArgs e)
@@ -121,7 +126,7 @@ namespace Audio_Book_Player
 			if (MediaPlayer.NaturalDuration.HasTimeSpan)
 				if (currentTime == MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds)
 				{
-					LoadFile(Code.CommonFunctions.GetNextFile(currentDirectory, currentFile));
+					LoadFile(Code.CommonFunctions.GetNextFile(filesInFolder, currentIndex));
 					currentTime = 0;
 					Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
 				}
@@ -140,6 +145,7 @@ namespace Audio_Book_Player
 
 		void LoadFile(string _file)
 		{
+			Debug.WriteLine("Trying to open: " + _file);
 			MediaPlayer.Source = new Uri(_file);
 			
 			this.Title = System.IO.Path.GetFileNameWithoutExtension(_file);
@@ -147,7 +153,27 @@ namespace Audio_Book_Player
 			currentDirectory = System.IO.Path.GetDirectoryName(_file);
 			currentFile = _file;
 			Code.CommonFunctions.AddOrUpdateAppSettings("File", _file);
-			
+			if (filesInFolder != null)
+			{
+				currentIndex = Array.IndexOf(filesInFolder, currentFile);
+
+				
+			}
+
+			DropDown.SelectedItem = System.IO.Path.GetFileNameWithoutExtension(currentFile);
+		}
+
+		void LoadFiles()
+		{
+			DropDown.Items.Clear();
+			filesInFolder = Code.CommonFunctions.GetFilesInDirectory(currentDirectory);
+			Array.Sort(filesInFolder, Code.CommonFunctions.CompareNatural);
+			for (int i = 0; i < filesInFolder.Length; i++)
+			{
+				DropDown.Items.Add(System.IO.Path.GetFileNameWithoutExtension(filesInFolder[i]));
+			}
+			currentIndex = Array.IndexOf(filesInFolder, currentFile);
+			DropDown.SelectedItem = System.IO.Path.GetFileNameWithoutExtension(currentFile);
 		}
 
 		public void RefreshUI()
@@ -161,6 +187,16 @@ namespace Audio_Book_Player
 			if (MediaPlayer.NaturalDuration.HasTimeSpan)
 			{
 				RefreshPositionUI();
+			}
+		}
+
+		private void DropDown_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		{
+			if (DropDown.SelectedItem != null)
+			{
+				LoadFile(currentDirectory + "\\" + DropDown.SelectedItem.ToString() + ".mp3");
+				currentTime = 0;
+				Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
 			}
 		}
 

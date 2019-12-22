@@ -18,6 +18,7 @@
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
@@ -90,6 +91,9 @@
 					<TextBlock TextWrapping="Wrap" Text="Skip Forward"></TextBlock>
 				</Viewbox>
 			</Button>
+		</Grid>
+		<Grid Grid.Row="4">
+			<ComboBox Name="DropDown" Margin="8" SelectionChanged="DropDown_SelectionChanged"></ComboBox>
 		</Grid>
 		<MediaElement Name="MediaPlayer" MediaOpened="MediaPlayer_MediaOpened" LoadedBehavior="Manual"></MediaElement>
 	</Grid>
