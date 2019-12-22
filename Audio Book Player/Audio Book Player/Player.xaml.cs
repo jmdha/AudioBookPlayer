@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using System.Configuration;
 using System.Collections.Specialized;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Audio_Book_Player
 {
@@ -16,7 +17,15 @@ namespace Audio_Book_Player
 	public partial class Player : Window
 	{
 		DispatcherTimer timer = new DispatcherTimer();
-		double currentTime, volume;
+		double currentTime { 
+			get { return _currentTime; }
+			set {
+				_currentTime = value;
+			} }
+		double _currentTime;
+		double volume;
+		string currentBook = "none";
+		string currentBookPath;
 		public string currentFile;
 		public string currentDirectory;
 		public string[] filesInFolder;
@@ -31,21 +40,28 @@ namespace Audio_Book_Player
 		private void Grid_Loaded(object sender, RoutedEventArgs e)
 		{
 			LoadConfig();
-			MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
-			LoadFile(currentFile);
-			LoadFiles();
+			if (currentFile != "" && currentFile != null)
+			{
+				MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
+				LoadFile(currentFile);
+				Console.WriteLine(currentTime);
+				LoadFiles();
+				Console.WriteLine(currentTime);
+			}
 		}
 		
 		private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e)
 		{
-			
 			TotalMin.Text = (MediaPlayer.NaturalDuration.TimeSpan.Minutes + (MediaPlayer.NaturalDuration.TimeSpan.Hours * 60)).ToString();
 			TotalSec.Text = MediaPlayer.NaturalDuration.TimeSpan.Seconds.ToString();
 			PositionSlider.Maximum = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
 			RefreshUI();
-			timer.Interval = TimeSpan.FromSeconds(1);
-			timer.Tick += Tick;
-			timer.Start();
+			if (!timer.IsEnabled)
+			{
+				timer.Interval = TimeSpan.FromSeconds(1);
+				timer.Tick += Tick;
+				timer.Start();
+			}
 		}
 		private void PositionSlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
 		{
@@ -54,7 +70,7 @@ namespace Audio_Book_Player
 			MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(Math.Floor(PositionSlider.Value)));
 			currentTime = PositionSlider.Value;
 			RefreshPositionUI();
-			Code.CommonFunctions.AddOrUpdateAppSettings("Position", currentTime.ToString());
+			Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, currentTime.ToString());
 		}
 		private void PositionSlider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
@@ -70,7 +86,7 @@ namespace Audio_Book_Player
 		private void Start_Click(object sender, RoutedEventArgs e)
 		{
 			currentTime = 0;
-			Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
+			Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, "0");
 			MediaPlayer.Position = new TimeSpan(0);
 			RefreshPositionUI();
 			MediaPlayer.Play();
@@ -97,14 +113,14 @@ namespace Audio_Book_Player
 		{
 			LoadFile(Code.CommonFunctions.GetFormerFile(filesInFolder, currentIndex));
 			currentTime = 0;
-			Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
+			Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, "0");
 		}
 
 		private void SkipForward_Click(object sender, RoutedEventArgs e)
 		{
 			LoadFile(Code.CommonFunctions.GetNextFile(filesInFolder, currentIndex));
 			currentTime = 0;
-			Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
+			Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, "0");
 		}
 
 		private void Button_Click(object sender, RoutedEventArgs e)
@@ -128,17 +144,27 @@ namespace Audio_Book_Player
 				{
 					LoadFile(Code.CommonFunctions.GetNextFile(filesInFolder, currentIndex));
 					currentTime = 0;
-					Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
+					Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, "0");
 				}
-			Code.CommonFunctions.AddOrUpdateAppSettings("Position", currentTime.ToString());
+			Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, currentTime.ToString());
 		}
 
 		void LoadConfig()
 		{
-			if (ConfigurationManager.AppSettings.Get("File") != "")
+			currentFile = "";
+			currentTime = 0;
+			volume = 1;
+
+			currentBook = ConfigurationManager.AppSettings.Get("currentbook");
+
+			if (currentBook == "" || currentBook == null)
 			{
-				currentFile = ConfigurationManager.AppSettings.Get("File");
-				currentTime = Convert.ToDouble(ConfigurationManager.AppSettings.Get("Position"));
+				currentBook = "none";
+				return;
+			} else
+			{
+				currentFile = ConfigurationManager.AppSettings.Get("path --- " + currentBook);
+				currentTime = Convert.ToDouble(ConfigurationManager.AppSettings.Get("position --- " + currentBook));
 				volume = Convert.ToDouble(ConfigurationManager.AppSettings.Get("Volume"));
 			}
 		}
@@ -148,11 +174,14 @@ namespace Audio_Book_Player
 			Debug.WriteLine("Trying to open: " + _file);
 			MediaPlayer.Source = new Uri(_file);
 			
-			this.Title = System.IO.Path.GetFileNameWithoutExtension(_file);
 			RefreshUI();
 			currentDirectory = System.IO.Path.GetDirectoryName(_file);
+			this.Title = System.IO.Path.GetFileName(currentDirectory);
+			currentBook = this.Title;
+			currentBookPath = currentDirectory;
 			currentFile = _file;
-			Code.CommonFunctions.AddOrUpdateAppSettings("File", _file);
+			Code.CommonFunctions.AddOrUpdateAppSettings("currentbook", currentBook);
+			Code.CommonFunctions.AddOrUpdateAppSettings("path --- " + currentBook, _file);
 			if (filesInFolder != null)
 			{
 				currentIndex = Array.IndexOf(filesInFolder, currentFile);
@@ -160,20 +189,31 @@ namespace Audio_Book_Player
 				
 			}
 
-			DropDown.SelectedItem = System.IO.Path.GetFileNameWithoutExtension(currentFile);
+			ChapterList.SelectedItem = System.IO.Path.GetFileNameWithoutExtension(currentFile);
 		}
 
 		void LoadFiles()
 		{
-			DropDown.Items.Clear();
+			ChapterList.Items.Clear();
 			filesInFolder = Code.CommonFunctions.GetFilesInDirectory(currentDirectory);
 			Array.Sort(filesInFolder, Code.CommonFunctions.CompareNatural);
 			for (int i = 0; i < filesInFolder.Length; i++)
 			{
-				DropDown.Items.Add(System.IO.Path.GetFileNameWithoutExtension(filesInFolder[i]));
+				ChapterList.Items.Add(System.IO.Path.GetFileNameWithoutExtension(filesInFolder[i]));
 			}
 			currentIndex = Array.IndexOf(filesInFolder, currentFile);
-			DropDown.SelectedItem = System.IO.Path.GetFileNameWithoutExtension(currentFile);
+			ChapterList.SelectedItem = System.IO.Path.GetFileNameWithoutExtension(currentFile);
+
+			BookList.Items.Clear();
+			string[] tempBooks = ConfigurationManager.AppSettings.AllKeys;
+			tempBooks = tempBooks.Where(c => c.Contains("path")).ToArray();
+			List<string> books = new List<string>();
+			for (int i = 0; i < tempBooks.Length; i++)
+			{
+				books.Add(tempBooks[i].Substring(9));
+				BookList.Items.Add(tempBooks[i].Substring(9));
+			}
+			BookList.SelectedItem = currentBook;
 		}
 
 		public void RefreshUI()
@@ -190,13 +230,17 @@ namespace Audio_Book_Player
 			}
 		}
 
-		private void DropDown_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+
+		private void BookList_DropDownClosed(object sender, EventArgs e)
 		{
-			if (DropDown.SelectedItem != null)
+			if (BookList.SelectedItem != null && BookList.SelectedItem.ToString() != currentBook)
 			{
-				LoadFile(currentDirectory + "\\" + DropDown.SelectedItem.ToString() + ".mp3");
-				currentTime = 0;
-				Code.CommonFunctions.AddOrUpdateAppSettings("Position", "0");
+				Code.CommonFunctions.AddOrUpdateAppSettings("currentbook", BookList.SelectedItem.ToString());
+				LoadConfig();
+				
+				LoadFile(currentFile);
+				MediaPlayer.Position = new TimeSpan(0, 0, Convert.ToInt32(currentTime));
+				LoadFiles();
 			}
 		}
 
@@ -205,6 +249,16 @@ namespace Audio_Book_Player
 			PositionSlider.Value = currentTime;
 			CurrentMin.Text = (MediaPlayer.Position.Minutes + (MediaPlayer.Position.Hours * 60)).ToString();
 			CurrentSec.Text = MediaPlayer.Position.Seconds.ToString();
+		}
+
+		private void ChapterList_DropDownClosed(object sender, EventArgs e)
+		{
+			if (ChapterList.SelectedItem != null)
+			{
+				LoadFile(currentDirectory + "\\" + ChapterList.SelectedItem.ToString() + ".mp3");
+				currentTime = 0;
+				Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, "0");
+			}
 		}
 	}
 }

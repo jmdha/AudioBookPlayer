@@ -19,6 +19,7 @@
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
@@ -93,7 +94,10 @@
 			</Button>
 		</Grid>
 		<Grid Grid.Row="4">
-			<ComboBox Name="DropDown" Margin="8" SelectionChanged="DropDown_SelectionChanged"></ComboBox>
+			<ComboBox Name="BookList" Margin="8" DropDownClosed="BookList_DropDownClosed" ></ComboBox>
+		</Grid>
+		<Grid Grid.Row="5">
+			<ComboBox Name="ChapterList" Margin="8" DropDownClosed="ChapterList_DropDownClosed" ></ComboBox>
 		</Grid>
 		<MediaElement Name="MediaPlayer" MediaOpened="MediaPlayer_MediaOpened" LoadedBehavior="Manual"></MediaElement>
 	</Grid>
