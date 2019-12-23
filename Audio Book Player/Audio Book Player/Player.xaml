@@ -10,96 +10,158 @@
 		TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}">
 
-	
-	
-	<Grid Loaded="Grid_Loaded">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="*"></RowDefinition>
-		</Grid.RowDefinitions>
-		<Grid Grid.Row="0">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="*"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-			</Grid.ColumnDefinitions>
-			<Button Margin="2 4 2 4" Grid.Column="0" FontSize="8" Padding="8" Click="Button_Click" >
-				<Viewbox Stretch="Uniform">
-					<TextBlock TextWrapping="Wrap" Text="Change"></TextBlock>
-				</Viewbox>
-			</Button>
 
-			<Slider Name="VolumeSlider" Grid.Column="1" VerticalAlignment="Center" Margin="4 0 4 0" Minimum="0" Maximum="1" ValueChanged="VolumeSlider_ValueChanged"></Slider>
-			
-			<Button Margin="2 4 2 4" Grid.Column="2" FontSize="8" Padding="8">
-				<Viewbox Stretch="Uniform">
-					<TextBlock TextWrapping="Wrap" Text="Settings"></TextBlock>
-				</Viewbox>
-			</Button>
-				
-			
+
+	<Grid Name="MainGrid" Loaded="Grid_Loaded">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"></ColumnDefinition>
+			<ColumnDefinition Width="0"></ColumnDefinition>
+		</Grid.ColumnDefinitions>
+		<Grid Grid.Column="0">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+			</Grid.RowDefinitions>
+			<Grid Grid.Row="0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<Button Margin="2 4 2 4" Grid.Column="0" FontSize="8" Padding="8" Click="Button_Click" >
+					<Viewbox Stretch="Uniform">
+						<TextBlock TextWrapping="Wrap" Text="Change"></TextBlock>
+					</Viewbox>
+					<Button.ToolTip>
+						<TextBlock Text="Select the current file"></TextBlock>
+					</Button.ToolTip>
+				</Button>
+
+				<Slider Name="VolumeSlider" Grid.Column="1" VerticalAlignment="Center" Margin="4 0 4 0" Minimum="0" Maximum="1" ValueChanged="VolumeSlider_ValueChanged">
+					<Slider.ToolTip>
+						<TextBlock Text="Set volume from 1 to 100"></TextBlock>
+					</Slider.ToolTip>
+				</Slider>
+
+				<Button Name="SettingsButton" Margin="2 4 2 4" Grid.Column="2" FontSize="8" Padding="8" Click="SettingsButton_Click">
+					<Viewbox Stretch="Uniform">
+						<TextBlock TextWrapping="Wrap" Text="Settings"></TextBlock>
+					</Viewbox>
+					<Button.ToolTip>
+						<TextBlock Text="Opens/closes the settings menu"></TextBlock>
+					</Button.ToolTip>
+				</Button>
+
+
+			</Grid>
+			<Grid Grid.Row="1" HorizontalAlignment="Center">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+					<ColumnDefinition Width="Auto"></ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<TextBlock Name="CurrentMin" Grid.Column="0" FontSize="32" Text="0"></TextBlock>
+				<TextBlock Grid.Column="1" FontSize="32" Text=":"></TextBlock>
+				<TextBlock  Name="CurrentSec" Grid.Column="2" FontSize="32" Text="0"></TextBlock>
+				<TextBlock Grid.Column="3" FontSize="32" Text="'"></TextBlock>
+				<TextBlock Name="TotalMin" Grid.Column="4" FontSize="32" Text="0"></TextBlock>
+				<TextBlock Grid.Column="5" FontSize="32" Text=":"></TextBlock>
+				<TextBlock Name="TotalSec" Grid.Column="6" FontSize="32" Text="0"></TextBlock>
+			</Grid>
+			<Grid Grid.Row="2">
+				<Slider Name="PositionSlider" VerticalAlignment="Center" Margin="4 0 4 0" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp">
+					<Slider.ToolTip>
+						<TextBlock Text="Sets the position of the current file"></TextBlock>
+					</Slider.ToolTip>
+				</Slider>
+			</Grid>
+			<Grid Grid.Row="3">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<Button Name="Start" Margin="2 4 2 4" Grid.Column="0" FontSize="8" Padding="8" Click="Start_Click">
+					<Viewbox Stretch="Uniform">
+						<TextBlock TextWrapping="Wrap" Text="Start"></TextBlock>
+					</Viewbox>
+					<Button.ToolTip>
+						<TextBlock Text="Plays the file from the beginning"></TextBlock>
+					</Button.ToolTip>
+				</Button>
+				<Button Name="ContinuePause" Margin="2 4 2 4" Grid.Column="1" FontSize="8" Padding="8" Click="ContinuePause_Click" >
+					<Viewbox Stretch="Uniform">
+						<TextBlock Name="ContinuePauseText" TextWrapping="Wrap" Text="Continue"></TextBlock>
+					</Viewbox>
+					<Button.ToolTip>
+						<TextBlock Text="Continues/pauses the file in the current position"></TextBlock>
+					</Button.ToolTip>
+				</Button>
+				<Button Name="SkipBack" Margin="2 4 2 4" Grid.Column="2" FontSize="8" Padding="8" Click="SkipBack_Click">
+					<Viewbox Stretch="Uniform">
+						<TextBlock TextWrapping="Wrap" Text="Skip Back"></TextBlock>
+					</Viewbox>
+					<Button.ToolTip>
+						<TextBlock Text="Goes to the previous file"></TextBlock>
+					</Button.ToolTip>
+				</Button>
+				<Button Name="SkipForward" Margin="2 4 2 4" Grid.Column="3" FontSize="8" Padding="8" Click="SkipForward_Click">
+					<Viewbox Stretch="Uniform">
+						<TextBlock TextWrapping="Wrap" Text="Skip Forward"></TextBlock>
+					</Viewbox>
+					<Button.ToolTip>
+						<TextBlock Text="Goes to the next file"></TextBlock>
+					</Button.ToolTip>
+				</Button>
+			</Grid>
+			<Grid Grid.Row="4">
+				<ComboBox Name="BookList" Margin="8" DropDownClosed="BookList_DropDownClosed" >
+					<ComboBox.ToolTip>
+						<TextBlock Text="Select the current folder/book"></TextBlock>
+					</ComboBox.ToolTip>
+				</ComboBox>
+			</Grid>
+			<Grid Grid.Row="5">
+				<ComboBox Name="ChapterList" Margin="8" DropDownClosed="ChapterList_DropDownClosed" >
+					<ComboBox.ToolTip>
+						<TextBlock Text="Select the current file"></TextBlock>
+					</ComboBox.ToolTip>
+				</ComboBox>
+			</Grid>
+			<MediaElement Name="MediaPlayer" MediaOpened="MediaPlayer_MediaOpened" LoadedBehavior="Manual"></MediaElement>
 		</Grid>
-		<Grid Grid.Row="1" HorizontalAlignment="Center">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-			</Grid.ColumnDefinitions>
-			<TextBlock Name="CurrentMin" Grid.Column="0" FontSize="32" Text="0"></TextBlock>
-			<TextBlock Grid.Column="1" FontSize="32" Text=":"></TextBlock>
-			<TextBlock  Name="CurrentSec" Grid.Column="2" FontSize="32" Text="0"></TextBlock>
-			<TextBlock Grid.Column="3" FontSize="32" Text="'"></TextBlock>
-			<TextBlock Name="TotalMin" Grid.Column="4" FontSize="32" Text="0"></TextBlock>
-			<TextBlock Grid.Column="5" FontSize="32" Text=":"></TextBlock>
-			<TextBlock Name="TotalSec" Grid.Column="6" FontSize="32" Text="0"></TextBlock>
+		<Grid Name="SettingsGrid" Grid.Column="1" IsEnabled="False">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition Height="Auto"></RowDefinition>
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Text="Settings" Margin="8" HorizontalAlignment="Center"></TextBlock>
+				<Grid Grid.Row="1">
+					<Grid.RowDefinitions>
+						<RowDefinition></RowDefinition>
+						<RowDefinition></RowDefinition>
+					</Grid.RowDefinitions>
+					<CheckBox Name="ShuffleCheckBox" Margin="8" Click="ShuffleCheckBox_Click">
+						<TextBlock Text="Shuffle" Margin="0 -2 0 0"/>
+						<CheckBox.ToolTip>
+							<TextBlock Text="Plays a random file instead of the next"></TextBlock>
+						</CheckBox.ToolTip>
+					</CheckBox>
+				</Grid>
+
+			</Grid>
+
 		</Grid>
-		<Grid Grid.Row="2">
-			<Slider Name="PositionSlider" VerticalAlignment="Center" Margin="4 0 4 0" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp"></Slider>
-		</Grid>
-		<Grid Grid.Row="3">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*"></ColumnDefinition>
-				<ColumnDefinition Width="*"></ColumnDefinition>
-				<ColumnDefinition Width="*"></ColumnDefinition>
-				<ColumnDefinition Width="*"></ColumnDefinition>
-			</Grid.ColumnDefinitions>
-			<Button Name="Start" Margin="2 4 2 4" Grid.Column="0" FontSize="8" Padding="8" Click="Start_Click">
-				<Viewbox Stretch="Uniform">
-					<TextBlock TextWrapping="Wrap" Text="Play"></TextBlock>
-				</Viewbox>
-			</Button>
-			<Button Name="ContinuePause" Margin="2 4 2 4" Grid.Column="1" FontSize="8" Padding="8" Click="ContinuePause_Click" >
-				<Viewbox Stretch="Uniform">
-					<TextBlock Name="ContinuePauseText" TextWrapping="Wrap" Text="Continue"></TextBlock>
-				</Viewbox>
-			</Button>
-			<Button Name="SkipBack" Margin="2 4 2 4" Grid.Column="2" FontSize="8" Padding="8" Click="SkipBack_Click">
-				<Viewbox Stretch="Uniform">
-					<TextBlock TextWrapping="Wrap" Text="Skip Back"></TextBlock>
-				</Viewbox>
-			</Button>
-			<Button Name="SkipForward" Margin="2 4 2 4" Grid.Column="3" FontSize="8" Padding="8" Click="SkipForward_Click">
-				<Viewbox Stretch="Uniform">
-					<TextBlock TextWrapping="Wrap" Text="Skip Forward"></TextBlock>
-				</Viewbox>
-			</Button>
-		</Grid>
-		<Grid Grid.Row="4">
-			<ComboBox Name="BookList" Margin="8" DropDownClosed="BookList_DropDownClosed" ></ComboBox>
-		</Grid>
-		<Grid Grid.Row="5">
-			<ComboBox Name="ChapterList" Margin="8" DropDownClosed="ChapterList_DropDownClosed" ></ComboBox>
-		</Grid>
-		<MediaElement Name="MediaPlayer" MediaOpened="MediaPlayer_MediaOpened" LoadedBehavior="Manual"></MediaElement>
 	</Grid>
-	
+
 </Window>

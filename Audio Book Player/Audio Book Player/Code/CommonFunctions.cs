@@ -10,6 +10,7 @@ namespace Audio_Book_Player.Code
 {
 	class CommonFunctions
 	{
+        
 		public static string[] GetFilesInDirectory(string _dir)
 		{
 			return Directory.GetFiles(_dir, "*.mp3");
@@ -25,10 +26,22 @@ namespace Audio_Book_Player.Code
 		}
 		public static string GetNextFile(string[] _files, int _index)
 		{
-			if (_files.Length - 1 == _index)
-				return _files[0];
-			else
-				return _files[_index + 1];
+            
+            if (ConfigurationManager.AppSettings.Get("shuffle") == "False")
+            {
+                if (_files.Length - 1 == _index)
+                    return _files[0];
+                else
+                    return _files[_index + 1];
+            } else
+            {
+                int newIndex;
+                do
+                {
+                    newIndex = Player.ran.Next(0, _files.Length);
+                } while (newIndex == _index);
+                return _files[newIndex];
+            }
 		}
 		public static string GetFormerFile(string[] _files, int _index)
 		{

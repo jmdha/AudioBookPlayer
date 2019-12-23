@@ -16,6 +16,7 @@ namespace Audio_Book_Player
 	/// </summary>
 	public partial class Player : Window
 	{
+		public static Random ran = new Random();
 		DispatcherTimer timer = new DispatcherTimer();
 		double currentTime { 
 			get { return _currentTime; }
@@ -155,6 +156,11 @@ namespace Audio_Book_Player
 			currentTime = 0;
 			volume = 1;
 
+			string tempShuffle = ConfigurationManager.AppSettings.Get("shuffle");
+			if (tempShuffle == "" || tempShuffle == null)
+				Code.CommonFunctions.AddOrUpdateAppSettings("shuffle", "False");
+			ShuffleCheckBox.IsChecked = Boolean.Parse(tempShuffle);
+
 			currentBook = ConfigurationManager.AppSettings.Get("currentbook");
 
 			if (currentBook == "" || currentBook == null)
@@ -230,7 +236,6 @@ namespace Audio_Book_Player
 			}
 		}
 
-
 		private void BookList_DropDownClosed(object sender, EventArgs e)
 		{
 			if (BookList.SelectedItem != null && BookList.SelectedItem.ToString() != currentBook)
@@ -253,12 +258,35 @@ namespace Audio_Book_Player
 
 		private void ChapterList_DropDownClosed(object sender, EventArgs e)
 		{
-			string selectedFile = (currentDirectory + "\\" + ChapterList.SelectedItem.ToString() + ".mp3");
-			if (ChapterList.SelectedItem != null && currentFile != selectedFile)
+			
+			if (ChapterList.SelectedItem != null)
 			{
-				LoadFile(selectedFile);
-				currentTime = 0;
-				Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, "0");
+				string selectedFile = (currentDirectory + "\\" + ChapterList.SelectedItem.ToString() + ".mp3");
+				if (currentFile != selectedFile)
+				{
+					LoadFile(selectedFile);
+					currentTime = 0;
+					Code.CommonFunctions.AddOrUpdateAppSettings("position --- " + currentBook, "0");
+				}
+			}
+		}
+
+		private void ShuffleCheckBox_Click(object sender, RoutedEventArgs e)
+		{
+			Code.CommonFunctions.AddOrUpdateAppSettings("shuffle", ShuffleCheckBox.IsChecked.ToString());
+		}
+
+		private void SettingsButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (SettingsGrid.IsEnabled)
+			{
+				SettingsGrid.IsEnabled = false;
+				MainGrid.ColumnDefinitions[1].Width = new GridLength(0);
+			}
+			else
+			{
+				SettingsGrid.IsEnabled = true;
+				MainGrid.ColumnDefinitions[1].Width = new GridLength();
 			}
 		}
 	}
