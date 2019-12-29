@@ -8,6 +8,7 @@ using System.Configuration;
 using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Audio_Book_Player
 {
@@ -32,7 +33,6 @@ namespace Audio_Book_Player
 		public string[] filesInFolder;
 		public int currentIndex;
 		private bool currentlyPaused = true;
-		private bool initialUISet = true;
 
 		public Player()
 		{
@@ -48,7 +48,10 @@ namespace Audio_Book_Player
 				Console.WriteLine(currentTime);
 				LoadFiles();
 				Console.WriteLine(currentTime);
+				
+
 			}
+			
 		}
 		
 		private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e)
@@ -101,6 +104,8 @@ namespace Audio_Book_Player
 				MediaPlayer.Play();
 				currentlyPaused = false;
 				ContinuePauseText.Text = "Pause";
+				if (RevertCheckBox.IsChecked == true)
+					MediaPlayer.Position = MediaPlayer.Position.Subtract(new TimeSpan(0, 0, Int32.Parse(ConfigurationManager.AppSettings.Get("reverttime"))));
 			}
 			else
 			{
@@ -159,10 +164,18 @@ namespace Audio_Book_Player
 			string tempShuffle = ConfigurationManager.AppSettings.Get("shuffle");
 			if (tempShuffle == "" || tempShuffle == null)
 				Code.CommonFunctions.AddOrUpdateAppSettings("shuffle", "False");
-			ShuffleCheckBox.IsChecked = Boolean.Parse(tempShuffle);
-
+			ShuffleCheckBox.IsChecked = Boolean.Parse(ConfigurationManager.AppSettings.Get("shuffle"));
+			string tempRevert = ConfigurationManager.AppSettings.Get("revert");
+			if (tempRevert == "" || tempRevert == null)
+				Code.CommonFunctions.AddOrUpdateAppSettings("revert", "False");
+			RevertCheckBox.IsChecked = Boolean.Parse(ConfigurationManager.AppSettings.Get("revert"));
+			RevertTime.IsEnabled = Boolean.Parse(ConfigurationManager.AppSettings.Get("revert"));
+			
+			string revertTime = ConfigurationManager.AppSettings.Get("reverttime");
+			if (revertTime == "" || revertTime == null)
+				Code.CommonFunctions.AddOrUpdateAppSettings("reverttime", "30");
+			RevertTime.Text = ConfigurationManager.AppSettings.Get("reverttime");
 			currentBook = ConfigurationManager.AppSettings.Get("currentbook");
-
 			if (currentBook == "" || currentBook == null)
 			{
 				currentBook = "none";
@@ -288,6 +301,29 @@ namespace Audio_Book_Player
 				SettingsGrid.IsEnabled = true;
 				MainGrid.ColumnDefinitions[1].Width = new GridLength();
 			}
+		}
+
+		private void RevertCheckBox_Click(object sender, RoutedEventArgs e)
+		{
+			Code.CommonFunctions.AddOrUpdateAppSettings("revert", RevertCheckBox.IsChecked.ToString());
+			if (RevertCheckBox.IsChecked == true)
+			{
+				RevertTime.IsEnabled = true;
+			} else
+			{
+				RevertTime.IsEnabled = false;
+			}
+		}
+
+		private void RevetTime_PreviewTextInput(object sender, TextCompositionEventArgs e)
+		{
+			Regex regex = new Regex("[^0-9]+");
+			e.Handled = regex.IsMatch(e.Text);
+		}
+
+		private void RevertTime_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+		{
+			Code.CommonFunctions.AddOrUpdateAppSettings("reverttime", RevertTime.Text);
 		}
 	}
 }

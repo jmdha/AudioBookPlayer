@@ -140,25 +140,35 @@
 			<MediaElement Name="MediaPlayer" MediaOpened="MediaPlayer_MediaOpened" LoadedBehavior="Manual"></MediaElement>
 		</Grid>
 		<Grid Name="SettingsGrid" Grid.Column="1" IsEnabled="False">
-			<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+			</Grid.RowDefinitions>
+			<TextBlock Grid.Row="0" Text="Settings" Margin="8" HorizontalAlignment="Center"></TextBlock>
+			<Grid Grid.Row="1">
 				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"></RowDefinition>
-					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition></RowDefinition>
+					<RowDefinition></RowDefinition>
+					<RowDefinition></RowDefinition>
 				</Grid.RowDefinitions>
-				<TextBlock Grid.Row="0" Text="Settings" Margin="8" HorizontalAlignment="Center"></TextBlock>
-				<Grid Grid.Row="1">
-					<Grid.RowDefinitions>
-						<RowDefinition></RowDefinition>
-						<RowDefinition></RowDefinition>
-					</Grid.RowDefinitions>
-					<CheckBox Name="ShuffleCheckBox" Margin="8" Click="ShuffleCheckBox_Click">
-						<TextBlock Text="Shuffle" Margin="0 -2 0 0"/>
-						<CheckBox.ToolTip>
-							<TextBlock Text="Plays a random file instead of the next"></TextBlock>
-						</CheckBox.ToolTip>
-					</CheckBox>
-				</Grid>
-
+				<CheckBox Grid.Row="0" Name="ShuffleCheckBox" Margin="8" Click="ShuffleCheckBox_Click">
+					<TextBlock Text="Shuffle" Margin="0 -2 0 0"/>
+					<CheckBox.ToolTip>
+						<TextBlock Text="Plays a random file instead of the next"></TextBlock>
+					</CheckBox.ToolTip>
+				</CheckBox>
+				<CheckBox Grid.Row="1" Name="RevertCheckBox" Margin="8" Click="RevertCheckBox_Click">
+					<TextBlock Text="Revert time" Margin="0 -2 0 0"/>
+					<CheckBox.ToolTip>
+						<TextBlock Text="Reverts time on continue"></TextBlock>
+					</CheckBox.ToolTip>
+				</CheckBox>
+				<TextBox Grid.Row="2" x:Name="RevertTime" Margin="8 0 8 0" PreviewTextInput="RevetTime_PreviewTextInput" MaxLength="3" TextChanged="RevertTime_TextChanged">
+					<TextBox.ToolTip>
+						<TextBlock Text="Amount of time to revert"></TextBlock>
+					</TextBox.ToolTip>
+				</TextBox>
 			</Grid>
 
 		</Grid>
