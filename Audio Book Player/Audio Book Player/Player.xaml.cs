@@ -48,8 +48,6 @@ namespace Audio_Book_Player
 				Console.WriteLine(currentTime);
 				LoadFiles();
 				Console.WriteLine(currentTime);
-				
-
 			}
 			
 		}
@@ -215,6 +213,8 @@ namespace Audio_Book_Player
 		{
 			ChapterList.Items.Clear();
 			filesInFolder = Code.CommonFunctions.GetFilesInDirectory(currentDirectory);
+			if (filesInFolder == null)
+				return;
 			Array.Sort(filesInFolder, Code.CommonFunctions.CompareNatural);
 			for (int i = 0; i < filesInFolder.Length; i++)
 			{
