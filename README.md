@@ -2,6 +2,6 @@
 A simplistic audio book player / music player
 
 
-Pawn position eval           |  Gradient of pawn position eval
+Initial interface   |  Interface with selected nusic
 :---------------------------:|:-------------------------:
 ![](Blank.png)  |  ![](Kevin.png)
